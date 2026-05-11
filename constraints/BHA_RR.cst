@@ -1,0 +1,143 @@
+#BHA_RR
+#His-Asp(Glu) dyad attacking enone
+#oxyanion stabilization by ARG
+
+####Block 1: His nucleophile attacking enone####
+
+#values in this block mainly derived from QM calculations
+
+VARIABLE_CST::BEGIN
+
+CST::BEGIN
+ TEMPLATE::   ATOM_MAP: 1 atom_name: C1 C2 C12
+ TEMPLATE::   ATOM_MAP: 1 residue3: BHA
+
+ TEMPLATE::   ATOM_MAP: 2 atom_type: Nhis
+ TEMPLATE::   ATOM_MAP: 2 residue3:  HIS
+
+ CONSTRAINT:: distanceAB:     2.0    0.3  100.0    1   1
+ CONSTRAINT::    angle_A:   109.0    5.0   50.0  360   1
+ CONSTRAINT::    angle_B:   123.0    5.0   50.0  360   1
+ CONSTRAINT::  torsion_A:   102.0    5.0   25.0  360   1 #<--- R-configuration
+ CONSTRAINT:: torsion_AB:   -30.0    5.0   25.0  180   1
+ CONSTRAINT::  torsion_B:   180.0   25.0   25.0  180   1 #double check
+
+ ALGORITHM_INFO:: match   
+  MAX_DUNBRACK_ENERGY  5.0 
+ ALGORITHM_INFO::END
+
+CST::END
+
+CST::BEGIN
+ TEMPLATE::   ATOM_MAP: 1 atom_name: C1 C2 C12
+ TEMPLATE::   ATOM_MAP: 1 residue3: BHA
+
+ TEMPLATE::   ATOM_MAP: 2 atom_type: Nhis
+ TEMPLATE::   ATOM_MAP: 2 residue3:  HIS
+
+ CONSTRAINT:: distanceAB:     2.0    0.3  100.0    1   1
+ CONSTRAINT::    angle_A:   109.0    5.0   50.0  360   1
+ CONSTRAINT::    angle_B:   123.0    5.0   50.0  360   1
+ CONSTRAINT::  torsion_A:   102.0    5.0   25.0  360   1 #<--- R-configuration
+ CONSTRAINT:: torsion_AB:   107.0    5.0   25.0  180   1
+ CONSTRAINT::  torsion_B:   180.0   25.0   25.0  180   1 #double check
+
+ ALGORITHM_INFO:: match   
+  MAX_DUNBRACK_ENERGY  5.0 
+ ALGORITHM_INFO::END
+
+CST::END
+
+CST::BEGIN
+ TEMPLATE::   ATOM_MAP: 1 atom_name: C1 C2 C12
+ TEMPLATE::   ATOM_MAP: 1 residue3: BHA
+
+ TEMPLATE::   ATOM_MAP: 2 atom_type: Nhis
+ TEMPLATE::   ATOM_MAP: 2 residue3:  HIS
+
+ CONSTRAINT:: distanceAB:     2.0    0.3  100.0    1   1
+ CONSTRAINT::    angle_A:   109.0    5.0   50.0  360   1
+ CONSTRAINT::    angle_B:   123.0    5.0   50.0  360   1
+ CONSTRAINT::  torsion_A:   102.0    5.0   25.0  360   1 #<--- R-configuration
+ CONSTRAINT:: torsion_AB:   131.0    5.0   25.0  180   1
+ CONSTRAINT::  torsion_B:   180.0   25.0   25.0  180   1 #double check
+
+ ALGORITHM_INFO:: match   
+  MAX_DUNBRACK_ENERGY  5.0 
+ ALGORITHM_INFO::END
+
+CST::END
+
+CST::BEGIN
+ TEMPLATE::   ATOM_MAP: 1 atom_name: C1 C2 C12
+ TEMPLATE::   ATOM_MAP: 1 residue3: BHA
+
+ TEMPLATE::   ATOM_MAP: 2 atom_type: Nhis
+ TEMPLATE::   ATOM_MAP: 2 residue3:  HIS
+
+ CONSTRAINT:: distanceAB:     2.0    0.3  100.0    1   1
+ CONSTRAINT::    angle_A:   109.0    5.0   50.0  360   1
+ CONSTRAINT::    angle_B:   123.0    5.0   50.0  360   1
+ CONSTRAINT::  torsion_A:   102.0    5.0   25.0  360   1 #<--- R-configuration
+ CONSTRAINT:: torsion_AB:     6.0    5.0   25.0  180   1
+ CONSTRAINT::  torsion_B:   180.0   25.0   25.0  180   1 #double check
+
+ ALGORITHM_INFO:: match   
+  MAX_DUNBRACK_ENERGY  5.0 
+ ALGORITHM_INFO::END
+
+CST::END
+
+VARIABLE_CST::END
+
+
+
+####Block 2: His-Glu/Asp H-bond interactions####
+
+#values in this block mainly derived from QM calculations
+
+
+CST::BEGIN
+ TEMPLATE::   ATOM_MAP: 1 atom_type: Ntrp
+ TEMPLATE::   ATOM_MAP: 1 residue3: HIS
+
+ TEMPLATE::   ATOM_MAP: 2 atom_type: OOC  
+ TEMPLATE::   ATOM_MAP: 2 residue1:  DE
+
+ CONSTRAINT:: distanceAB:     2.6    0.3   75.0    0   1 
+ CONSTRAINT::    angle_A:   120.0   15.0   50.0  360   1 
+ CONSTRAINT::    angle_B:   110.0   15.0   50.0  360   1 
+ CONSTRAINT::  torsion_A:     0.0   30.0   25.0  180   1 
+ CONSTRAINT::  torsion_B:   180.0   30.0   25.0  180   1 
+
+
+ ALGORITHM_INFO:: match
+  IGNORE_UPSTREAM_PROTON_CHI
+  SECONDARY_MATCH: UPSTREAM_CST 1
+  MAX_DUNBRACK_ENERGY  5.0
+ ALGORITHM_INFO::END
+CST::END
+
+
+####Block 3: Arg stabilizing oxyanion, bidentate####
+
+#values in this block taken from Anna's theozyme constraint rp1_match_v5_R.cst
+#modified based on QM calculations of Green Lab
+
+CST::BEGIN
+ TEMPLATE::   ATOM_MAP: 1 atom_name: O3 C12 C2
+ TEMPLATE::   ATOM_MAP: 1 residue3: BHA
+
+ TEMPLATE::   ATOM_MAP: 2 atom_name: CZ NE CD
+ TEMPLATE::   ATOM_MAP: 2 residue3:  ARG
+
+ CONSTRAINT:: distanceAB:     3.3    0.3   75.0    0   2 
+ CONSTRAINT::    angle_A:   160.0   30.0   50.0  360   2 
+ CONSTRAINT::    angle_B:   165.0   10.0   50.0  360   2 
+
+ ALGORITHM_INFO:: match
+  IGNORE_UPSTREAM_PROTON_CHI
+  SECONDARY_MATCH: DOWNSTREAM
+  MAX_DUNBRACK_ENERGY  5.0
+ ALGORITHM_INFO::END
+CST::END
