@@ -1,0 +1,193 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        
+        <ScoreFunction name="sfxn" weights="beta_nov16" />
+        
+        <ScoreFunction name="sfxn_soft" weights="beta_nov16_soft" />
+        
+        <ScoreFunction name="sfxn_softish" weights="beta_nov16" >
+            <Reweight scoretype="fa_rep" weight="0.15" />
+        </ScoreFunction>
+        
+        <ScoreFunction name="sfxn_cst" weights="beta_nov16_cst" />
+
+        <ScoreFunction name="sfxn_relax" weights="beta_nov16" >
+            <Reweight scoretype="arg_cation_pi" weight="1.5" />
+        </ScoreFunction>
+        
+        <ScoreFunction name="sfxn_cst_relax" weights="beta_nov16_cst" >
+            <Reweight scoretype="arg_cation_pi" weight="1.5" />
+        </ScoreFunction>
+ 
+    </SCOREFXNS>
+    
+    <RESIDUE_SELECTORS>
+        
+        <Chain name="chainA" chains="A"/>
+        <Chain name="chainB" chains="B"/>
+        <Chain name="chainX" chains="X"/>
+        
+        <Chain name="chain1" chains="1"/>
+        <Chain name="chain2" chains="2"/>
+        
+        <Index name="cat_res_1" resnums="%%geom_cst_pos_1%%" />
+        <Index name="cat_res_2" resnums="%%geom_cst_pos_2%%" />
+        <Index name="cat_res_3" resnums="%%geom_cst_pos_3%%" />
+        
+        <ResidueName name="apolar" residue_name3="ALA,PHE,ILE,LEU,MET,PRO,VAL,TRP" />
+        <Not name="polar" selector="apolar" />
+        
+        <ResiduePDBInfoHasLabel name="pocket_res" property="pocket"/>
+        <Not name="not_pocket_res" selector="pocket_res"/>
+        
+        
+    </RESIDUE_SELECTORS>
+
+    <TASKOPERATIONS>
+        
+        <InitializeFromCommandline name="init" />
+        <SetCatalyticResPackBehavior name="catpack" fix_catalytic_aa="0" />
+        <DetectProteinLigandInterface name="dpli" cut1="6.0" cut2="8.0" cut3="10.0" cut4="12.0" design="1" catres_interface="1" arg_sweep_interface="0" />
+        <DetectProteinLigandInterface name="dpli_repack" cut1="6.0" cut2="8.0" cut3="10.0" cut4="12.0" design="0" catres_interface="1" arg_sweep_interface="0" />
+        
+        <ProteinProteinInterfaceUpweighter name="upweight_interface" interface_weight="3" />
+        <ProteinInterfaceDesign name="pack_long" design_chain1="0" design_chain2="0" jump="1" interface_distance_cutoff="15"/>
+        
+        <IncludeCurrent name="ic" />
+        <LimitAromaChi2 name="limitchi2" chi2max="110" chi2min="70" include_trp="True" />
+        <ExtraRotamersGeneric name="ex1_ex2_ex2aro" ex1="1" ex2="1" ex2aro="1" />
+        <ExtraRotamersGeneric name="extrarot" ex1="1" ex2="1" ex3="1" ex4="1" ex1aro="1" ex2aro="1" ex1_sample_level="1" ex2_sample_level="1" ex3_sample_level="1" ex4_sample_level="1" ex1aro_sample_level="1" ex2aro_sample_level="1" />
+        
+        <SetIGType name="precompute_ig" precompute_ig="1" />
+        
+        <OperateOnResidueSubset name="prevent_repack_ligand" selector="chain2">
+              <PreventRepackingRLT/>
+        </OperateOnResidueSubset>
+
+    </TASKOPERATIONS>
+    
+    <RESIDUE_SELECTORS>
+        <Task name="fastdesign_interface_res" fixed="0" packable="0" designable="1" task_operations="dpli,catpack" />
+    </RESIDUE_SELECTORS>
+    
+    <SIMPLE_METRICS>
+
+        <RMSDMetric name="rmsd_all_heavy" residue_selector="chain1" residue_selector_ref="chain1" residue_selector_super="chain1" residue_selector_super_ref="chain1" super="1" robust="1" rmsd_type="rmsd_all_heavy" reference_name="pose_wo_lig" />
+        <RMSDMetric name="rmsd_cat_res_1" residue_selector="cat_res_1" residue_selector_ref="cat_res_1" residue_selector_super="chain1" residue_selector_super_ref="chain1" super="1" robust="1" rmsd_type="rmsd_sc_heavy" reference_name="pose_wo_lig" />
+        <RMSDMetric name="rmsd_cat_res_2" residue_selector="cat_res_2" residue_selector_ref="cat_res_2" residue_selector_super="chain1" residue_selector_super_ref="chain1" super="1" robust="1" rmsd_type="rmsd_sc_heavy" reference_name="pose_wo_lig" />
+        <RMSDMetric name="rmsd_cat_res_3" residue_selector="cat_res_3" residue_selector_ref="cat_res_3" residue_selector_super="chain1" residue_selector_super_ref="chain1" super="1" robust="1" rmsd_type="rmsd_sc_heavy" reference_name="pose_wo_lig" />
+
+        <TotalEnergyMetric name="native_pose_score" use_native="1" scoretype="total_score" scorefxn="sfxn_cst" />
+
+    </SIMPLE_METRICS>
+    
+    
+    <MOVERS>
+        
+        <AddOrRemoveMatchCsts name="add_enz_csts" cstfile="%%geom_cst%%" cst_instruction="add_new"/>
+        <AddOrRemoveMatchCsts name="rm_enz_csts" cstfile="%%geom_cst%%" cst_instruction="remove"/>
+        
+        <ClearConstraintsMover name="rm_csts" />
+        
+        <EnzRepackMinimize name="cst_opt" scorefxn_repack="sfxn_cst" scorefxn_minimize="sfxn_cst" cst_opt="1" minimize_sc="1" minimize_bb="1" cycles="1" min_in_stages="0" task_operations="dpli_repack,ic,catpack" />
+        
+        <SwitchChainOrder name="rm_lig" chain_order="1"/>
+        <DeleteRegionMover name="remove_lig" residue_selector="chain2" />
+        
+        <TaskAwareMinMover name="min" scorefxn="sfxn" bb="0" chi="1" task_operations="extrarot,ic,pack_long" />
+        <TaskAwareMinMover name="softish_min" scorefxn="sfxn_softish" chi="1" bb="1" jump="1" tolerance="0.01" cartesian="false" task_operations="ic,ex1_ex2_ex2aro,limitchi2" />
+        <TaskAwareMinMover name="hard_min" scorefxn="sfxn" chi="1" bb="1" jump="1" tolerance="0.01" cartesian="false" task_operations="ic,ex1_ex2_ex2aro,limitchi2" />
+        
+        <FastRelax name="fastrelax" scorefxn="sfxn_relax" repeats="1" disable_design="1" batch="false" ramp_down_constraints="false" cartesian="false" bondangle="false" bondlength="false" min_type="dfpmin_armijo_nonmonotone" task_operations="extrarot,ic,limitchi2,prevent_repack_ligand" />
+        <FastRelax name="fastrelax_no_lig" scorefxn="sfxn_relax" repeats="1" disable_design="1" batch="false" ramp_down_constraints="false" cartesian="false" bondangle="false" bondlength="false" min_type="dfpmin_armijo_nonmonotone" task_operations="extrarot,ic,limitchi2" />
+        <FastRelax name="fastrelax_csts" scorefxn="sfxn_cst_relax" repeats="1" disable_design="1" batch="false" ramp_down_constraints="false" cartesian="false" bondangle="false" bondlength="false" min_type="dfpmin_armijo_nonmonotone" task_operations="extrarot,ic,limitchi2,prevent_repack_ligand" />
+        
+        <FastDesign name="fastdesign_interface" scorefxn="sfxn_cst_relax" repeats="1" task_operations="extrarot,ic,limitchi2,dpli,upweight_interface,catpack,prevent_repack_ligand" batch="false" ramp_down_constraints="false" cartesian="False" bondangle="false" bondlength="false" min_type="dfpmin_armijo_nonmonotone" /> 
+        
+        <Superimpose name="superimpose" CA_only="0"/>
+        
+        <SimpleThreadingMover name="thread_mpnn_seq" thread_sequence="%%mpnn_seq%%" pack_neighbors="0" neighbor_dis="6.0" start_position="1"  scorefxn="sfxn" skip_unknown_mutant="FALSE" pack_rounds="5" />
+        
+        
+        <SavePoseMover name="save_pose_w_lig" restore_pose="0" reference_name="pose_w_lig" />
+        <SavePoseMover name="load_pose_w_lig" restore_pose="1" reference_name="pose_w_lig" />
+        <SavePoseMover name="save_pose_wo_lig" restore_pose="0" reference_name="pose_wo_lig" />
+        <SavePoseMover name="load_pose_wo_lig" restore_pose="1" reference_name="pose_wo_lig" />
+        
+        <RunSimpleMetrics name="calculate_rmsd_all_heavy"   metrics="rmsd_all_heavy"   prefix="all_heavy_" />
+        <RunSimpleMetrics name="calculate_rmsd_cat_res_1"   metrics="rmsd_cat_res_1"   prefix="cat_res_1_" />
+        <RunSimpleMetrics name="calculate_rmsd_cat_res_2"   metrics="rmsd_cat_res_2"   prefix="cat_res_2_" />
+        <RunSimpleMetrics name="calculate_rmsd_cat_res_3"   metrics="rmsd_cat_res_3"   prefix="cat_res_3_" />
+  
+        <RunSimpleMetrics name="calculate_native_pose_score"   metrics="native_pose_score"   prefix="native_pose_" />
+        
+        <AddResidueLabel name="designable_res" residue_selector="fastdesign_interface_res" label="designable" />
+
+    </MOVERS>
+    
+    <FILTERS>
+        
+        <Sasa name="interface_buried_sasa" confidence="0" />
+        <Ddg name="ddg" threshold="0" jump="1" repeats="3" repack="1" relax_mover="min" confidence="0" scorefxn="sfxn" />
+        <Ddg name="ddg_norepack"  threshold="0" jump="1" repeats="1" repack="0" relax_mover="min" confidence="0" scorefxn="sfxn" />
+        <ShapeComplementarity name="interface_sc" verbose="0" min_sc="0.55" write_int_area="1" write_median_dist="1" jump="1" confidence="0" />
+        
+        <ScoreType name="total_score" score_type="total_score" scorefxn="sfxn_cst" threshold="0" confidence="0" />
+
+        <ResidueCount name="nres" confidence="0" />
+        
+        <CalculatorFilter name="score_per_res" confidence="0" equation="SCORE/NRES" threshold="999">
+              <Var name="SCORE" filter_name="total_score" />
+              <Var name="NRES" filter_name="nres" />
+        </CalculatorFilter>
+        
+        <ContactMolecularSurface name="contact_molecular_surface" distance_weight="0.5" target_selector="chainA" binder_selector="chainX" confidence="0" />
+        <EnzScore name="cst_score" scorefxn="sfxn_cst" confidence="0" whole_pose="1" score_type="cstE" energy_cutoff="100.0" />
+
+    </FILTERS>
+
+
+    <PROTOCOLS>
+        
+
+        <Add mover="add_enz_csts" />
+        <Add mover="cst_opt" />
+        
+        <Add mover="fastdesign_interface"/> 
+        <Add mover="rm_csts"/>
+        <Add mover="fastrelax"/>
+        
+        This is the designed protein-ligand complexe
+        <Add mover="save_pose_w_lig"/>
+        
+        remove ligand and relax
+        <Add mover="rm_csts"/>
+        <Add mover="rm_lig" /> 
+        <Add mover="fastrelax_no_lig"/>
+        
+        <Add mover="save_pose_wo_lig"/>
+        
+        <Add mover="load_pose_w_lig"/>
+           
+        score the protein-ligand complexe
+        <Add mover="add_enz_csts"/>
+        <Add filter="cst_score"/>
+        <Add filter="ddg_norepack" />
+        <Add filter="interface_buried_sasa" />
+        <Add filter="contact_molecular_surface" />
+        <Add filter="interface_sc" />
+        <Add filter="score_per_res" />
+        
+        rmsd between pose with/without ligand
+        <Add mover="calculate_rmsd_all_heavy" />
+        <Add mover="calculate_rmsd_cat_res_1" />
+        <Add mover="calculate_rmsd_cat_res_2" />
+        <Add mover="calculate_rmsd_cat_res_3" />
+        
+        <Add mover="designable_res" />
+
+
+    </PROTOCOLS>
+    
+    <OUTPUT scorefxn="sfxn_cst"/>
+</ROSETTASCRIPTS>
