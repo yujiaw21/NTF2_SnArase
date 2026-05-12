@@ -28,7 +28,7 @@ AlphaFold2 Validation
 
 ```
 .
-├── design_script/            # Design scripts and intermiate files for all three strategies
+├── design_scripts/            # Design scripts and intermediate files for all three strategies
 ├── dft_coordinates/          # DFT coordinates of theozymes (.xyz)
 ├── ligand_params/            # Ligand parameter files (.params)
 ├── constraints/              # Geometric constraint files (.cst)
@@ -43,8 +43,8 @@ AlphaFold2 Validation
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| LigandMPNN |  | https://github.com/dauparas/LigandMPNN|
-| AlphaFold2 | 2.2.2 | https://github.com/google-deepmind/alphafold|
+| LigandMPNN |  | https://github.com/dauparas/LigandMPNN/ |
+| AlphaFold2 | 2.2.2 | https://github.com/google-deepmind/alphafold/ |
 | Python |3.10.13 | |
 | PyRosetta | 2024.15 | https://www.pyrosetta.org/ |
 
@@ -55,7 +55,7 @@ AlphaFold2 Validation
 Theozyme geometries derived from DFT transition state calculations were placed into a scaffold library using RosettaMatch.
 
 ```bash
-$ROSETTAPATH/main/source/bin/match.hdf5.linuxgccrelease @{flags} -beta_nov16 -preserve_header true -s {pdb_file} -match:geometric_constraint_file {cst} -match::scaffold_active_site_residues_for_geomcsts geom_cst_pos.txt -extra_res_fa {params} -match:lig_name BHA -nstruct 1 >log_{pdb}.txt'
+$ROSETTAPATH/main/source/bin/match.hdf5.linuxgccrelease @{flags} -beta_nov16 -preserve_header true -s {pdb_file} -match:geometric_constraint_file {cst} -match::scaffold_active_site_residues_for_geomcsts geom_cst_pos.txt -extra_res_fa {params} -match:lig_name BHA -nstruct 1 >log_{pdb}.txt
 ```
 
 **Key input files:**
@@ -69,7 +69,7 @@ $ROSETTAPATH/main/source/bin/match.hdf5.linuxgccrelease @{flags} -beta_nov16 -pr
 The RosettaMatch output was filtered before sequence design using the following command.
 
 ```bash
-$ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -preserve_header true -s {pdb_path}  -parser:protocol {xml} -extra_res_fa {params} -parser:script_vars geom_cst="{cst}" -nstruct 1 -out:file:score_only {scorefile} >/dev/null''
+$ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -preserve_header true -s {pdb_path}  -parser:protocol {xml} -extra_res_fa {params} -parser:script_vars geom_cst="{cst}" -nstruct 1 -out:file:score_only {scorefile} >/dev/null
 ```
 
 **Key input files:**
@@ -88,14 +88,14 @@ Three design strategies were applied in parallel to the RosettaMatch outputs.
 ### 2a. Rosetta Interface Design
 
 ```bash
-$ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -preserve_header true -s {pdb_path} -parser:protocol {xml} -extra_res_fa {params} -parser:script_vars geom_cst_pos_1="{pos[0]}" geom_cst_pos_2="{pos[1]}" geom_cst_pos_3="{pos[2]}" geom_cst="{cst}" -nstruct 1 -out:file:score_only {scorefile} >/dev/null'
+$ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -preserve_header true -s {pdb_path} -parser:protocol {xml} -extra_res_fa {params} -parser:script_vars geom_cst_pos_1="{pos[0]}" geom_cst_pos_2="{pos[1]}" geom_cst_pos_3="{pos[2]}" geom_cst="{cst}" -nstruct 1 -out:file:score_only {scorefile} >/dev/null
 ```
 
 **Key input files:**
 - `pdb_path` — RosettaMatch output.
 - `xml` — RosettaScripts XML protocol for interface design. An example is provided at `design_scripts/enzdes.xml`
 - `params`— ligand parameter file. All `.params` are provided at `ligand_params/`
-- `pos[0], pos[1], pos[2]` — residue number of the catalytic histidine, aspartate/Glutamate, arginine
+- `pos[0], pos[1], pos[2]` — residue number of the catalytic histidine, aspartate/glutamate, arginine
 - `cst` — geometric constraint file defining theozyme geometry. Constraint files for each stereochemical configuration are provided at `constraints/`
 
 ### 2b. Rosetta–LigandMPNN Hybrid
@@ -108,7 +108,7 @@ Rosetta was first used to optimise the protein–ligand interface, followed by L
 See the example above in 2a.
 
 # Step 2: LigandMPNN sequence design
-python {mpnn_dir}/protein_mpnn_run.py 
+python {mpnn_dir}/protein_mpnn_run.py \
     --pdb_path {pdb_path} \
     --pdb_path_chains A \
     --fixed_positions_jsonl {path_for_fixed_positions} \
@@ -116,7 +116,7 @@ python {mpnn_dir}/protein_mpnn_run.py
     --out_folder {output_dir} \
     --num_seq_per_target 4 \
     --sampling_temp "0.1" \
-    --batch_size 1'
+    --batch_size 1
 ```
 
 **Key input files:**
@@ -129,7 +129,7 @@ python {mpnn_dir}/protein_mpnn_run.py
 ### 2c. LigandMPNN-Based Design
 
 ```bash
-python {mpnn_dir}/protein_mpnn_run.py 
+python {mpnn_dir}/protein_mpnn_run.py \
     --pdb_path {pdb_path} \
     --pdb_path_chains A \
     --fixed_positions_jsonl {path_for_fixed_positions} \
@@ -137,12 +137,12 @@ python {mpnn_dir}/protein_mpnn_run.py
     --out_folder {output_dir} \
     --num_seq_per_target 4 \
     --sampling_temp "0.1" \
-    --batch_size 1'
+    --batch_size 1
 ```
 
 
 **Key input files:**
-- `pdb_path` — Output `.pdb` file from step 1.
+- `pdb_path` — Output `.pdb` file from RosettaMatch.
 - `path_for_fixed_positions` — LigandMPNN jsonl file for defining which residues are fixed. Use the script `design_scripts/make_jsonl_for_fixed_positions_2c.py` to generate the required files.
 - `params`— ligand parameter file. All `.params` are provided at `ligand_params/`
 
@@ -151,10 +151,10 @@ python {mpnn_dir}/protein_mpnn_run.py
 
 ## Stage 3: Filtering
 
-Designs were filtered based on shape complementarity, active site geometry, and Rosetta energy terms. The following metrics and cutoffs were applied. For designs using LigandMPNN, the designed sequence were threaded back to the input Rosetta model using the following command.
+Designs were filtered based on shape complementarity, active site geometry, and Rosetta energy terms. The following metrics and cutoffs were applied. For designs using LigandMPNN, the designed sequence was threaded back to the input Rosetta model using the following command.
 
 ```bash
-$ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -preserve_header true -s {pdb_path}  -parser:protocol {xml} -extra_res_fa {params} -parser:script_vars geom_cst_pos_1="{pos[0]}" geom_cst_pos_2="{pos[1]}"  geom_cst_pos_3="{pos[2]}" geom_cst="{cst}" mpnn_seq="{mpnn_seq}" -nstruct 1 >/dev/null''
+$ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -preserve_header true -s {pdb_path}  -parser:protocol {xml} -extra_res_fa {params} -parser:script_vars geom_cst_pos_1="{pos[0]}" geom_cst_pos_2="{pos[1]}"  geom_cst_pos_3="{pos[2]}" geom_cst="{cst}" mpnn_seq="{mpnn_seq}" -nstruct 1 >/dev/null
 ```
 
 **Key input files:**
@@ -169,7 +169,7 @@ $ROSETTAPATH/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -beta_nov16 -p
 
 ## Stage 4: AlphaFold2 Validation
 
-Designs passing filters were assessed using [AlphaFold2](https://github.com/google-deepmind/alphafold) to evaluate predicted structural quality and correspondence to the design model. Please refer to the official documents for how to run AlphaFold2.
+Designs passing filters were assessed using [AlphaFold2](https://github.com/google-deepmind/alphafold) to evaluate predicted structural quality and correspondence to the design model. Please refer to the official documentation for how to run AlphaFold2.
 
 
 ---
